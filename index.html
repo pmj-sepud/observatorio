@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
   <script>try{var t=localStorage.getItem('portalbi:tema')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
   <!-- portal.css é cópia do Portal BI (pmj-sepud/portal-bi): mantém o mesmo visual. -->
-  <link rel="stylesheet" href="assets/css/portal.css?v=20261028c" />
+  <link rel="stylesheet" href="assets/css/portal.css?v=20261028d" />
   <style>
     /* Complementos do Observatório (sem sidebar; ícone de apresentação nos cards; detalhe da caixa) */
     .card-kicker small { display:block; margin-top:.15rem; font-size:.66rem; font-weight:600; letter-spacing:.02em; text-transform:none; color:var(--ink-500); overflow:hidden; text-overflow:ellipsis; }
@@ -23,6 +23,10 @@
     .doc-link:hover { text-decoration:underline; }
     .monitor td.cx { white-space:nowrap; }
     .monitor .doc-sub { margin:.25rem 0 0 calc(9px + .6rem); font-size:.76rem; color:var(--ink-500); max-width:60ch; }
+    .monitor .doc-pags { margin:.35rem 0 0 calc(9px + .6rem); font-size:.76rem; color:var(--ink-500); }
+    .monitor .doc-pags a { font-weight:700; margin-right:.35rem; }
+    .monitor .doc-trecho { margin:.2rem 0 0 calc(9px + .6rem); font-size:.76rem; color:var(--ink-600); font-style:italic; max-width:70ch; }
+    .monitor .doc-trecho mark { background:color-mix(in srgb, var(--brand-600) 18%, transparent); color:inherit; border-radius:3px; padding:0 2px; font-style:normal; }
     .docs-busca { margin-top:2rem; }
     @media (max-width:640px) { .topbar .clock { display:none; } }
   </style>
@@ -121,7 +125,8 @@
     </footer>
   </div>
 
-  <script src="assets/js/caixas.js?v=20261028c"></script>
+  <script src="assets/js/caixas.js?v=20261028d"></script>
+  <script src="assets/js/paginas.js?v=20261028d"></script>
   <script>
     (function () {
       var DADOS = window.OBSERVATORIO, CAIXAS = DADOS.caixas;
@@ -141,7 +146,38 @@
       function dataBR(iso) { var p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
       function num(c) { return CAIXAS.indexOf(c) + 1; }
       function todosDocs() { var r = []; CAIXAS.forEach(function (c) { c.documentos.forEach(function (d) { r.push({ c: c, d: d }); }); }); return r; }
-      function docTexto(d) { return norm([d.id, d.titulo, d.conteudo, d.unidade, d.palavras, d.tipo, d.ano, d.bairro].join(" ")); }
+      function docTexto(d) { return norm([d.id, d.titulo, d.conteudo, d.unidade, d.palavras, d.tipo, d.ano, d.bairro].join(" ")) + " " + (PAG_NORM[d.id] || []).join(" "); }
+
+      /* ---------------- busca dentro dos PDFs (assets/js/paginas.js) ---------------- */
+      // normaliza caractere a caractere para que as posições batam com o texto original (trecho)
+      function normPosicional(s) {
+        var r = "";
+        for (var i = 0; i < s.length; i++) r += norm(s.charAt(i)).charAt(0) || " ";
+        return r;
+      }
+      var PAGINAS = window.OBSERVATORIO_PAGINAS || {}, PAG_NORM = {};
+      Object.keys(PAGINAS).forEach(function (id) { PAG_NORM[id] = PAGINAS[id].map(normPosicional); });
+      function paginasCom(d, t) {
+        var r = [];
+        (PAG_NORM[d.id] || []).forEach(function (txt, i) { if (txt.indexOf(t) >= 0) r.push(i + 1); });
+        return r;
+      }
+      function trecho(id, pag, t) {
+        var raw = PAGINAS[id][pag - 1], i = PAG_NORM[id][pag - 1].indexOf(t);
+        var ini = Math.max(0, i - 70), fim = Math.min(raw.length, i + t.length + 90);
+        return (ini ? "…" : "") + esc(raw.slice(ini, i)) + "<mark>" + esc(raw.slice(i, i + t.length)) + "</mark>" + esc(raw.slice(i + t.length, fim)) + (fim < raw.length ? "…" : "");
+      }
+      function paginasHTML(d, termo) {
+        var t = norm(termo);
+        if (!t || !d.link) return "";
+        var pgs = paginasCom(d, t);
+        if (!pgs.length) return "";
+        var max = 12;
+        return '<div class="doc-pags">' + (pgs.length === 1 ? "Página " : "Páginas ") +
+          pgs.slice(0, max).map(function (n) { return '<a class="doc-link" href="' + esc(d.link) + "#page=" + n + '" target="_blank" rel="noopener">' + n + "</a>"; }).join("") +
+          (pgs.length > max ? " +" + (pgs.length - max) : "") + "</div>" +
+          '<div class="doc-trecho">p. ' + pgs[0] + ": “" + trecho(d.id, pgs[0], t) + "”</div>";
+      }
       var SVG_APRESENTACAO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3h12.5M14.2 6.8V4H3.5v10h10.7v-3.4M6.2 14l-1.9 7M11.5 14l1.9 7M5.9 11.6V9.2M8 11.6V6.6M10.1 11.6V8.2M12.4 9l4.4.9"/><circle cx="18.6" cy="5.9" r="1.9" fill="currentColor" stroke="none"/><rect x="16.7" y="9.2" width="3.8" height="6.6" rx="1" fill="currentColor" stroke="none"/><path d="M17.7 15v6M19.5 15v6M20.4 10.4l1.6 5"/></svg>';
       function caixaIcon() { return '<div class="card-icon">' + SVG_APRESENTACAO + "</div>"; }
       function badgeCaixa(c) {
@@ -172,14 +208,14 @@
           "</article>"
         );
       }
-      function tabelaDocs(lista, comCaixa) {
+      function tabelaDocs(lista, comCaixa, termo) {
         return '<div class="table-card"><div class="table-scroll"><table class="monitor"><thead><tr><th>ID</th><th>Documento</th>' +
           (comCaixa ? "<th>Caixa</th>" : "") + "<th>Unidade</th><th>Tipo</th><th>Situação</th><th></th></tr></thead><tbody>" +
           lista.map(function (x) {
             var d = x.d;
             return '<tr><td class="cx"><span class="ver">' + esc(d.id) + "</span></td>" +
               '<td title="' + esc(d.palavras) + '"><div class="name"><span class="dot-cat" style="background:' + x.c.cor + '"></span>' + esc(d.titulo) + "</div>" +
-              (d.conteudo ? '<div class="doc-sub">' + esc(d.conteudo) + "</div>" : "") + "</td>" +
+              (d.conteudo ? '<div class="doc-sub">' + esc(d.conteudo) + "</div>" : "") + paginasHTML(d, termo) + "</td>" +
               (comCaixa ? '<td class="cx"><a class="doc-link" href="#caixa/' + x.c.id + '">' + esc(x.c.sigla) + "</a></td>" : "") +
               "<td>" + esc(d.unidade) + "</td><td>" + esc(d.tipo) + "</td><td>" + badgeDoc(d.status) + "</td>" +
               "<td>" + (d.link ? '<a class="doc-link" href="' + esc(d.link) + '" target="_blank" rel="noopener">Abrir ↗</a>' : '<span class="ver">Sem arquivo</span>') + "</td></tr>";
@@ -202,7 +238,7 @@
           ? '<section class="grupo" aria-label="Caixas temáticas"><header class="grupo-head"><h3>Caixas temáticas</h3><span>' + vis.length + (vis.length === 1 ? " caixa" : " caixas") + "</span></header>" +
             '<div class="cards-grid">' + vis.map(cardHTML).join("") + "</div></section>"
           : '<div class="empty-state" role="status">' + SVG_DOC + "<p>Nenhuma caixa encontrada para o filtro atual.</p></div>") +
-          (docs.length ? '<section class="grupo"><header class="grupo-head"><h3>Documentos encontrados</h3><span>' + docs.length + "</span></header>" + tabelaDocs(docs, true) + "</section>" : "");
+          (docs.length ? '<section class="grupo"><header class="grupo-head"><h3>Documentos encontrados</h3><span>' + docs.length + "</span></header>" + tabelaDocs(docs, true, estado.termo) + "</section>" : "");
       }
       function renderStats() {
         // cada documento conta uma vez, mesmo que esteja em várias caixas
@@ -242,7 +278,7 @@
                 return '<button class="chip' + (estado.statusCaixa === o[0] ? " is-active" : "") + '" data-status="' + o[0] + '">' + o[1] + '<span class="n">' + o[2] + "</span></button>";
               }).join("") + "</div>" +
               '<p class="results-info">' + docs.length + " de " + c.documentos.length + " documentos</p>" +
-              (docs.length ? tabelaDocs(docs.map(function (d) { return { c: c, d: d }; }), false)
+              (docs.length ? tabelaDocs(docs.map(function (d) { return { c: c, d: d }; }), false, estado.termoCaixa)
                 : '<div class="empty-state" role="status">' + SVG_DOC + "<p>Nenhum documento encontrado para o filtro atual.</p></div>")
             : '<div class="table-card"><div class="empty-state" role="status">' + SVG_DOC + "<p>Esta caixa ainda não possui documentos cadastrados.</p></div></div>");
         var inp = el("search-caixa");
