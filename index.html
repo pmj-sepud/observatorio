@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
   <script>try{var t=localStorage.getItem('portalbi:tema')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
   <!-- portal.css é cópia do Portal BI (pmj-sepud/portal-bi): mantém o mesmo visual. -->
-  <link rel="stylesheet" href="assets/css/portal.css?v=20261028d" />
+  <link rel="stylesheet" href="assets/css/portal.css?v=20261028e" />
   <style>
     /* Complementos do Observatório (sem sidebar; ícone de apresentação nos cards; detalhe da caixa) */
     .card-kicker small { display:block; margin-top:.15rem; font-size:.66rem; font-weight:600; letter-spacing:.02em; text-transform:none; color:var(--ink-500); overflow:hidden; text-overflow:ellipsis; }
@@ -27,6 +27,21 @@
     .monitor .doc-pags a { font-weight:700; margin-right:.35rem; }
     .monitor .doc-trecho { margin:.2rem 0 0 calc(9px + .6rem); font-size:.76rem; color:var(--ink-600); font-style:italic; max-width:70ch; }
     .monitor .doc-trecho mark { background:color-mix(in srgb, var(--brand-600) 18%, transparent); color:inherit; border-radius:3px; padding:0 2px; font-style:normal; }
+    .monitor .acoes { white-space:nowrap; }
+    .monitor .acoes .doc-link + .doc-link { margin-left:.6rem; }
+    /* prévia do PDF (PDF.js) */
+    .previa { position:fixed; inset:0; z-index:100; display:none; background:rgba(8,20,40,.55); padding:2rem; }
+    .previa.is-open { display:flex; align-items:center; justify-content:center; }
+    .previa-box { width:min(1000px,100%); height:100%; display:flex; flex-direction:column; background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow-lg); overflow:hidden; }
+    .previa-head { display:flex; align-items:center; gap:.6rem; padding:.7rem 1rem; border-bottom:1px solid var(--line); }
+    .previa-head h3 { flex:1; min-width:0; margin:0; font-size:.92rem; font-weight:700; color:var(--ink-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .previa-pag { font-size:.82rem; color:var(--ink-500); white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .previa-head .icon-btn:disabled { opacity:.4; cursor:default; }
+    .previa-corpo { flex:1; overflow:auto; background:var(--surface-3); display:flex; justify-content:center; align-items:flex-start; padding:1rem; }
+    .previa-corpo canvas { display:block; max-width:100%; box-shadow:var(--shadow-md); background:#fff; }
+    .previa-corpo iframe { width:100%; height:100%; border:0; }
+    .previa-msg { margin:auto; color:var(--ink-500); font-size:.88rem; }
+    @media (max-width:640px) { .previa { padding:0; } .previa-box { border-radius:0; } .previa-head a.doc-link { display:none; } }
     .docs-busca { margin-top:2rem; }
     @media (max-width:640px) { .topbar .clock { display:none; } }
   </style>
@@ -125,8 +140,22 @@
     </footer>
   </div>
 
-  <script src="assets/js/caixas.js?v=20261028d"></script>
-  <script src="assets/js/paginas.js?v=20261028d"></script>
+  <div class="previa" id="previa" role="dialog" aria-modal="true" aria-labelledby="previa-titulo">
+    <div class="previa-box">
+      <div class="previa-head">
+        <h3 id="previa-titulo">Prévia</h3>
+        <button class="icon-btn" id="previa-ant" aria-label="Página anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span class="previa-pag" id="previa-pag">—</span>
+        <button class="icon-btn" id="previa-prox" aria-label="Próxima página"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        <a class="doc-link" id="previa-aba" href="#" target="_blank" rel="noopener">Abrir em nova aba ↗</a>
+        <button class="icon-btn" id="previa-fechar" aria-label="Fechar prévia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="previa-corpo" id="previa-corpo"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/caixas.js?v=20261028e"></script>
+  <script src="assets/js/paginas.js?v=20261028e"></script>
   <script>
     (function () {
       var DADOS = window.OBSERVATORIO, CAIXAS = DADOS.caixas;
@@ -167,6 +196,7 @@
         var ini = Math.max(0, i - 70), fim = Math.min(raw.length, i + t.length + 90);
         return (ini ? "…" : "") + esc(raw.slice(ini, i)) + "<mark>" + esc(raw.slice(i, i + t.length)) + "</mark>" + esc(raw.slice(i + t.length, fim)) + (fim < raw.length ? "…" : "");
       }
+      function attrPrevia(d, pag) { return ' data-previa="' + esc(d.link) + '" data-pag="' + pag + '" data-titulo="' + esc(d.id + " · " + d.titulo) + '"'; }
       function paginasHTML(d, termo) {
         var t = norm(termo);
         if (!t || !d.link) return "";
@@ -174,7 +204,7 @@
         if (!pgs.length) return "";
         var max = 12;
         return '<div class="doc-pags">' + (pgs.length === 1 ? "Página " : "Páginas ") +
-          pgs.slice(0, max).map(function (n) { return '<a class="doc-link" href="' + esc(d.link) + "#page=" + n + '" target="_blank" rel="noopener">' + n + "</a>"; }).join("") +
+          pgs.slice(0, max).map(function (n) { return '<a class="doc-link" href="' + esc(d.link) + "#page=" + n + '" target="_blank" rel="noopener"' + attrPrevia(d, n) + ">" + n + "</a>"; }).join("") +
           (pgs.length > max ? " +" + (pgs.length - max) : "") + "</div>" +
           '<div class="doc-trecho">p. ' + pgs[0] + ": “" + trecho(d.id, pgs[0], t) + "”</div>";
       }
@@ -218,7 +248,8 @@
               (d.conteudo ? '<div class="doc-sub">' + esc(d.conteudo) + "</div>" : "") + paginasHTML(d, termo) + "</td>" +
               (comCaixa ? '<td class="cx"><a class="doc-link" href="#caixa/' + x.c.id + '">' + esc(x.c.sigla) + "</a></td>" : "") +
               "<td>" + esc(d.unidade) + "</td><td>" + esc(d.tipo) + "</td><td>" + badgeDoc(d.status) + "</td>" +
-              "<td>" + (d.link ? '<a class="doc-link" href="' + esc(d.link) + '" target="_blank" rel="noopener">Abrir ↗</a>' : '<span class="ver">Sem arquivo</span>') + "</td></tr>";
+              '<td class="acoes">' + (d.link ? '<a class="doc-link" href="' + esc(d.link) + '" target="_blank" rel="noopener"' + attrPrevia(d, 1) + ">Prévia</a>" +
+                '<a class="doc-link" href="' + esc(d.link) + '" target="_blank" rel="noopener" title="Abrir em nova aba">↗</a>' : '<span class="ver">Sem arquivo</span>') + "</td></tr>";
           }).join("") + "</tbody></table></div></div>";
       }
       function renderChips() {
@@ -288,6 +319,77 @@
         });
       }
 
+      /* ---------------- prévia do PDF (PDF.js, carregado só no primeiro uso) ---------------- */
+      var PDFJS = "assets/vendor/pdfjs/"; // PDF.js 3.11.174 (Mozilla, Apache-2.0), hospedado no próprio site
+      var previa = { doc: null, link: "", pag: 1, total: 0, tarefa: null, pdfjs: null, cache: {} };
+      function carregarPdfjs() {
+        if (!previa.pdfjs) previa.pdfjs = new Promise(function (ok, erro) {
+          var sc = document.createElement("script");
+          sc.src = PDFJS + "pdf.min.js";
+          sc.onload = function () { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js"; ok(window.pdfjsLib); };
+          sc.onerror = erro;
+          document.head.appendChild(sc);
+        });
+        return previa.pdfjs;
+      }
+      function abrirPrevia(link, pag, titulo) {
+        el("previa-titulo").textContent = titulo;
+        el("previa").classList.add("is-open");
+        document.body.style.overflow = "hidden";
+        el("previa-fechar").focus();
+        previa.link = link; previa.pag = pag; previa.doc = null;
+        el("previa-corpo").innerHTML = '<p class="previa-msg">Carregando documento…</p>';
+        atualizarNav();
+        carregarPdfjs().then(function (lib) {
+          // documentos já abertos ficam em cache durante a visita
+          return previa.cache[link] || (previa.cache[link] = lib.getDocument(link).promise);
+        }).then(function (doc) {
+          if (previa.link !== link) return;
+          previa.doc = doc; previa.total = doc.numPages;
+          previa.pag = Math.min(Math.max(1, previa.pag), doc.numPages);
+          mostrarPagina();
+        }).catch(function () {
+          // sem PDF.js (rede bloqueada etc.): usa o leitor de PDF do navegador
+          delete previa.cache[link];
+          if (previa.link === link) el("previa-corpo").innerHTML = '<iframe title="' + esc(titulo) + '" src="' + esc(link) + "#page=" + pag + '"></iframe>';
+        });
+      }
+      function atualizarNav() {
+        el("previa-pag").textContent = previa.doc ? "Página " + previa.pag + " de " + previa.total : "—";
+        el("previa-ant").disabled = !previa.doc || previa.pag <= 1;
+        el("previa-prox").disabled = !previa.doc || previa.pag >= previa.total;
+        el("previa-aba").href = previa.link + "#page=" + previa.pag;
+      }
+      function mostrarPagina() {
+        var doc = previa.doc, n = previa.pag;
+        atualizarNav();
+        doc.getPage(n).then(function (page) {
+          if (previa.doc !== doc || previa.pag !== n) return;
+          var corpo = el("previa-corpo"), largura = corpo.clientWidth - 32;
+          var base = page.getViewport({ scale: 1 }), escala = Math.min(largura / base.width, 2.5);
+          var vp = page.getViewport({ scale: escala }), dpr = window.devicePixelRatio || 1;
+          var cv = document.createElement("canvas");
+          cv.width = Math.floor(vp.width * dpr); cv.height = Math.floor(vp.height * dpr);
+          cv.style.width = Math.floor(vp.width) + "px";
+          if (previa.tarefa) previa.tarefa.cancel();
+          previa.tarefa = page.render({ canvasContext: cv.getContext("2d"), viewport: vp, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null });
+          previa.tarefa.promise.then(function () {
+            if (previa.doc !== doc || previa.pag !== n) return;
+            corpo.innerHTML = ""; corpo.appendChild(cv); corpo.scrollTop = 0;
+          }).catch(function () {});
+        });
+      }
+      function irPagina(delta) {
+        var n = previa.pag + delta;
+        if (previa.doc && n >= 1 && n <= previa.total) { previa.pag = n; mostrarPagina(); }
+      }
+      function fecharPrevia() {
+        el("previa").classList.remove("is-open");
+        document.body.style.overflow = "";
+        previa.link = ""; previa.doc = null;
+        el("previa-corpo").innerHTML = "";
+      }
+
       /* ---------------- navegação ---------------- */
       function setView(name) {
         document.querySelectorAll(".view").forEach(function (v) { v.classList.toggle("is-active", v.getAttribute("data-view") === name); });
@@ -331,6 +433,13 @@
         estado.termo = ""; busca.value = ""; document.querySelector(".search-main").classList.remove("has-value"); renderCards(); busca.focus();
       });
       document.addEventListener("click", function (e) {
+        var pv = e.target.closest("[data-previa]");
+        // Ctrl/Shift/botão do meio continuam abrindo o PDF em outra aba
+        if (pv && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+          e.preventDefault();
+          abrirPrevia(pv.getAttribute("data-previa"), +pv.getAttribute("data-pag") || 1, pv.getAttribute("data-titulo"));
+          return;
+        }
         var v = e.target.closest(".segmented button[data-view]");
         if (v) { location.hash = v.getAttribute("data-view"); return; }
         var f = e.target.closest("[data-filtro]");
@@ -343,10 +452,21 @@
         }
       });
       document.addEventListener("keydown", function (e) {
+        if (el("previa").classList.contains("is-open")) {
+          if (e.key === "Escape") fecharPrevia();
+          else if (e.key === "ArrowRight" || e.key === "PageDown") irPagina(1);
+          else if (e.key === "ArrowLeft" || e.key === "PageUp") irPagina(-1);
+          return;
+        }
         if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); busca.focus(); }
       });
       el("theme-toggle").addEventListener("click", function () { aplicarTema(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"); });
       window.addEventListener("hashchange", rota);
+      el("previa-fechar").addEventListener("click", fecharPrevia);
+      el("previa-ant").addEventListener("click", function () { irPagina(-1); });
+      el("previa-prox").addEventListener("click", function () { irPagina(1); });
+      el("previa").addEventListener("click", function (e) { if (e.target === this) fecharPrevia(); });
+      window.addEventListener("resize", function () { if (previa.doc) mostrarPagina(); });
 
       aplicarTema(temaInicial());
       el("foot-year").textContent = new Date().getFullYear();
