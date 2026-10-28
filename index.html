@@ -23,6 +23,7 @@
     .doc-link { color:var(--brand-600); font-weight:600; white-space:nowrap; }
     .doc-link:hover { text-decoration:underline; }
     .monitor td.cx { white-space:nowrap; }
+    .monitor .doc-sub { margin:.25rem 0 0 calc(9px + .6rem); font-size:.76rem; color:var(--ink-500); max-width:60ch; }
     .docs-busca { margin-top:2rem; }
     @media (max-width:640px) { .topbar .clock { display:none; } }
   </style>
@@ -59,7 +60,7 @@
           <div>
             <span class="hero-eyebrow">Joinville/SC · Secretaria de Pesquisa e Planejamento Urbano – SEPUR</span>
             <h2>Observatório de Planejamento Urbano</h2>
-            <p>Repositório técnico da SEPUR organizado em caixas temáticas: legislação, mobilidade, projetos, sustentabilidade, instrumentos urbanísticos, dados e procedimentos.</p>
+            <p>Repositório técnico da SEPUR organizado em caixas temáticas: legislação, mobilidade, projetos, sustentabilidade, instrumentos urbanísticos, dados, procedimentos e referências de eventos.</p>
           </div>
           <div class="hero-stats">
             <div class="hstat"><div class="v" id="stat-caixas">—</div><div class="l">Caixas temáticas</div></div>
@@ -72,7 +73,7 @@
         <div class="toolbar-row">
           <div class="search-main" role="search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-            <input id="search-main" type="search" placeholder="Buscar por caixa, tema ou documento (ex.: LOT, EIV, PlanClima, SIMGeo)…" aria-label="Buscar" autocomplete="off" />
+            <input id="search-main" type="search" placeholder="Buscar por caixa, tema, unidade ou documento (ex.: LOT, EIV, SIMGeo, C7-04)…" aria-label="Buscar" autocomplete="off" />
             <button class="search-clear" id="search-clear" aria-label="Limpar busca">✕</button>
           </div>
         </div>
@@ -91,7 +92,7 @@
           <div class="about-block">
             <h4>O que é</h4>
             <p>O Repositório e Observatório de Planejamento Urbano reúne, em um só lugar, a produção técnica da SEPUR: leis e instrumentos normativos, estudos, projetos, bases de dados e os procedimentos internos da Secretaria.</p>
-            <p>O acervo é organizado em 7 caixas temáticas. Cada caixa lista seus documentos com tipo, ano, situação e link de acesso.</p>
+            <p>O acervo é organizado em 8 caixas temáticas. Cada caixa lista seus documentos com identificador, unidade responsável, tipo, situação e link de acesso. Um mesmo documento pode aparecer em mais de uma caixa.</p>
           </div>
           <div class="about-block">
             <h4>Caixas temáticas</h4>
@@ -141,7 +142,7 @@
       function dataBR(iso) { var p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
       function num(c) { return CAIXAS.indexOf(c) + 1; }
       function todosDocs() { var r = []; CAIXAS.forEach(function (c) { c.documentos.forEach(function (d) { r.push({ c: c, d: d }); }); }); return r; }
-      function docTexto(d) { return norm([d.titulo, d.tipo, d.ano, d.bairro].join(" ")); }
+      function docTexto(d) { return norm([d.id, d.titulo, d.conteudo, d.unidade, d.palavras, d.tipo, d.ano, d.bairro].join(" ")); }
       function siglaIcon(c) { return '<div class="card-icon sigla' + (c.sigla.length > 3 ? " longa" : "") + '">' + esc(c.sigla) + "</div>"; }
       function badgeCaixa(c) {
         var n = c.documentos.length;
@@ -161,7 +162,7 @@
       function cardHTML(c) {
         return (
           '<article class="card" style="--accent:' + c.cor + '">' +
-            '<div class="card-top">' + siglaIcon(c) + '<div class="card-kicker">Caixa ' + num(c) + "</div></div>" +
+            '<div class="card-top">' + siglaIcon(c) + '<div class="card-kicker" title="' + esc(c.unidades) + '">Caixa ' + num(c) + " · " + esc(c.unidades) + "</div></div>" +
             "<h3>" + esc(c.nome) + "</h3>" +
             '<p class="card-desc">' + esc(c.descricao) + "</p>" +
             '<div class="card-foot">' +
@@ -172,14 +173,16 @@
         );
       }
       function tabelaDocs(lista, comCaixa) {
-        return '<div class="table-card"><div class="table-scroll"><table class="monitor"><thead><tr><th>Documento</th>' +
-          (comCaixa ? "<th>Caixa</th>" : "") + "<th>Tipo</th><th>Ano</th><th>Situação</th><th></th></tr></thead><tbody>" +
+        return '<div class="table-card"><div class="table-scroll"><table class="monitor"><thead><tr><th>ID</th><th>Documento</th>' +
+          (comCaixa ? "<th>Caixa</th>" : "") + "<th>Unidade</th><th>Tipo</th><th>Situação</th><th></th></tr></thead><tbody>" +
           lista.map(function (x) {
             var d = x.d;
-            return '<tr><td><div class="name"><span class="dot-cat" style="background:' + x.c.cor + '"></span>' + esc(d.titulo) + "</div></td>" +
+            return '<tr><td class="cx"><span class="ver">' + esc(d.id) + "</span></td>" +
+              '<td title="' + esc(d.palavras) + '"><div class="name"><span class="dot-cat" style="background:' + x.c.cor + '"></span>' + esc(d.titulo) + "</div>" +
+              (d.conteudo ? '<div class="doc-sub">' + esc(d.conteudo) + "</div>" : "") + "</td>" +
               (comCaixa ? '<td class="cx"><a class="doc-link" href="#caixa/' + x.c.id + '">' + esc(x.c.sigla) + "</a></td>" : "") +
-              "<td>" + esc(d.tipo) + '</td><td class="num">' + esc(d.ano) + "</td><td>" + badgeDoc(d.status) + "</td>" +
-              "<td>" + (d.link ? '<a class="doc-link" href="' + esc(d.link) + '" target="_blank" rel="noopener">Abrir ↗</a>' : "") + "</td></tr>";
+              "<td>" + esc(d.unidade) + "</td><td>" + esc(d.tipo) + "</td><td>" + badgeDoc(d.status) + "</td>" +
+              "<td>" + (d.link ? '<a class="doc-link" href="' + esc(d.link) + '" target="_blank" rel="noopener">Abrir ↗</a>' : '<span class="ver">Sem arquivo</span>') + "</td></tr>";
           }).join("") + "</tbody></table></div></div>";
       }
       function renderChips() {
@@ -202,10 +205,11 @@
           (docs.length ? '<section class="grupo"><header class="grupo-head"><h3>Documentos encontrados</h3><span>' + docs.length + "</span></header>" + tabelaDocs(docs, true) + "</section>" : "");
       }
       function renderStats() {
-        var docs = todosDocs();
+        // cada documento conta uma vez, mesmo que esteja em várias caixas
+        var docs = Object.keys(DADOS.documentos).map(function (k) { return DADOS.documentos[k]; });
         el("stat-caixas").textContent = CAIXAS.length;
         el("stat-docs").textContent = docs.length;
-        el("stat-vigentes").textContent = docs.filter(function (x) { return x.d.status === "vigente"; }).length;
+        el("stat-vigentes").textContent = docs.filter(function (d) { return d.status === "vigente"; }).length;
         el("stat-atualizacao").textContent = dataBR(DADOS.atualizacao);
         el("sobre-caixas").innerHTML = CAIXAS.map(function (c) { return '<li><a class="doc-link" href="#caixa/' + c.id + '">' + esc(c.sigla) + "</a> — " + esc(c.nome) + "</li>"; }).join("");
       }
