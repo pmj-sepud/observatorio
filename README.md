@@ -23,3 +23,6 @@ Tudo vem de `assets/js/caixas.js`.
    `arquivos/Caixa N/<ID>.pdf` é montado automaticamente.
 
 `status`: `vigente`, `em-elaboracao` ou `arquivado`. A contagem de cada caixa é automática.
+
+Ao alterar `caixas.js` ou `portal.css`, troque o `?v=` correspondente em `index.html`
+(ex.: `?v=20261029`) para que os navegadores não usem a versão antiga em cache.
