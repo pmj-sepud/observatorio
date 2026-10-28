@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Observatório de Planejamento Urbano · SEPUR Joinville</title>
+  <meta name="description" content="Repositório e Observatório de Planejamento Urbano da Secretaria de Pesquisa e Planejamento Urbano (SEPUR) de Joinville." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0b1424; --navy-2: #111c30; --line-dark: #22304a;
+      --teal: #14b8a6; --teal-d: #0f766e;
+      --bg: #f4f6fa; --card: #fff; --ink: #0f172a; --ink-2: #475569; --ink-3: #94a3b8; --line: #e2e8f0;
+      --pill: #eef2f7;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+    a { color: inherit; }
+
+    /* Cabeçalho */
+    .top { background: var(--navy); color: #fff; }
+    .top-in { max-width: 1180px; margin: 0 auto; padding: 18px 24px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; min-width: 0; }
+    .logo { width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #0ea5e9, #14b8a6); display: grid; place-items: center; font-weight: 800; font-size: 15px; letter-spacing: .5px; flex: none; }
+    .kicker { font-size: 12px; font-weight: 700; letter-spacing: 1.4px; color: var(--teal); text-transform: uppercase; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .kicker .tag { color: #cbd5e1; border: 1px solid var(--line-dark); border-radius: 6px; padding: 1px 7px; letter-spacing: .5px; }
+    .brand h1 { margin: 2px 0 0; font-size: 21px; font-weight: 800; letter-spacing: -.2px; }
+    .search { margin-left: auto; position: relative; flex: 1 1 220px; max-width: 320px; }
+    .search input { width: 100%; background: var(--navy-2); border: 1px solid var(--line-dark); color: #fff; border-radius: 10px; padding: 10px 12px 10px 38px; font: inherit; font-size: 14px; }
+    .search input::placeholder { color: #8796ad; }
+    .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #8796ad; }
+    .portal-link { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-d); color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 9px; white-space: nowrap; }
+    .portal-link:hover { background: #0d9488; }
+
+    .filters { background: #070e1a; color: #cbd5e1; border-top: 1px solid var(--line-dark); }
+    .filters-in { max-width: 1180px; margin: 0 auto; padding: 12px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+    .filters label { font-weight: 600; color: var(--teal); }
+    .filters select { background: var(--navy-2); color: #fff; border: 1px solid var(--line-dark); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; max-width: 100%; }
+    .filters .info { flex-basis: 100%; color: #94a3b8; font-size: 12px; }
+    .filters .info b { color: #fff; }
+
+    main { max-width: 1180px; margin: 0 auto; padding: 24px 24px 48px; }
+    .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 18px; flex-wrap: wrap; }
+    .sec-head h2 { margin: 0; font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .sec-head h2 svg { width: 22px; height: 22px; color: var(--teal-d); }
+    .sec-head .hint { font-size: 13px; color: var(--ink-2); }
+
+    /* Caixas */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 18px; }
+    .caixa { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; text-decoration: none; transition: box-shadow .15s, transform .15s, border-color .15s; }
+    .caixa:hover, .caixa:focus-visible { box-shadow: 0 8px 24px rgba(15, 23, 42, .08); transform: translateY(-2px); border-color: color-mix(in srgb, var(--c) 40%, var(--line)); outline: none; }
+    .caixa-top { display: flex; gap: 14px; align-items: flex-start; }
+    .sigla { width: 44px; height: 44px; border-radius: 10px; background: var(--c); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 13px; flex: none; letter-spacing: .3px; }
+    .caixa-tit { flex: 1; min-width: 0; }
+    .caixa-tit small { display: block; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--ink-3); text-transform: uppercase; }
+    .caixa-tit h3 { margin: 3px 0 0; font-size: 15px; font-weight: 700; line-height: 1.35; }
+    .count { background: var(--pill); color: var(--ink); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .caixa p { color: var(--ink-2); font-size: 13.5px; line-height: 1.6; margin: 14px 0 18px; flex: 1; }
+    .caixa-foot { border-top: 1px solid var(--line); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+    .caixa-foot svg { width: 16px; height: 16px; color: var(--ink-3); }
+    .caixa.nova .sigla { box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 25%, transparent); }
+
+    /* Detalhe da caixa */
+    .voltar { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--teal-d); text-decoration: none; margin-bottom: 16px; }
+    .det-head { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: 16px; padding: 24px; display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+    .det-head .sigla { width: 56px; height: 56px; font-size: 15px; }
+    .det-head h2 { margin: 2px 0 6px; font-size: 21px; font-weight: 800; }
+    .det-head p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.6; }
+    .docs { margin-top: 18px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .doc { display: flex; gap: 14px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); text-decoration: none; }
+    .doc:last-child { border-bottom: 0; }
+    .doc:hover { background: #f8fafc; }
+    .doc .ic { width: 36px; height: 36px; border-radius: 8px; background: var(--pill); display: grid; place-items: center; flex: none; color: var(--c); }
+    .doc .ic svg { width: 18px; height: 18px; }
+    .doc .t { flex: 1; min-width: 0; }
+    .doc .t b { display: block; font-size: 14px; font-weight: 600; }
+    .doc .t span { font-size: 12.5px; color: var(--ink-2); }
+    .st { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+    .st.vigente { background: #dcfce7; color: #15803d; }
+    .st.em-elaboracao { background: #fef3c7; color: #b45309; }
+    .st.arquivado { background: #f1f5f9; color: #64748b; }
+    .vazio { padding: 40px 20px; text-align: center; color: var(--ink-2); font-size: 14px; }
+    .vazio svg { width: 40px; height: 40px; color: var(--ink-3); display: block; margin: 0 auto 10px; }
+
+    footer { border-top: 1px solid var(--line); background: #fff; }
+    .foot-in { max-width: 1180px; margin: 0 auto; padding: 20px 24px; display: flex; gap: 32px; flex-wrap: wrap; font-size: 13px; color: var(--ink); }
+    .foot-in small { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 3px; }
+
+    @media (max-width: 640px) {
+      .top-in, .filters-in, main, .foot-in { padding-left: 16px; padding-right: 16px; }
+      .top-in { gap: 14px; }
+      .brand { flex: 1 1 0; }
+      .brand h1 { font-size: 17px; }
+      .search { max-width: none; flex-basis: 100%; order: 3; }
+      .portal-link { padding: 9px 11px; }
+      .filters select { flex: 1 1 100%; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-in">
+      <a class="brand" href="#/">
+        <div class="logo">JOIN</div>
+        <div>
+          <div class="kicker">Prefeitura de Joinville <span class="tag">SEPUR</span></div>
+          <h1>Observatório de Planejamento Urbano</h1>
+        </div>
+      </a>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input id="busca" type="search" placeholder="Pesquisar caixas e documentos…" aria-label="Pesquisar" />
+      </label>
+      <a class="portal-link" href="https://pmj-sepud.github.io/portal-bi/">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Portal BI
+      </a>
+    </div>
+    <div class="filters">
+      <div class="filters-in">
+        <label for="f-caixa">Filtrar por:</label>
+        <select id="f-caixa"></select>
+        <select id="f-status">
+          <option value="">Todos os Status</option>
+          <option value="vigente">Vigente</option>
+          <option value="em-elaboracao">Em elaboração</option>
+          <option value="arquivado">Arquivado</option>
+        </select>
+        <div class="info" id="info"></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer>
+    <div class="foot-in">
+      <div><small>Observatório</small>Repositório de Planejamento Urbano</div>
+      <div><small>Última atualização</small><span id="atualizacao"></span></div>
+      <div><small>Secretaria responsável</small>Secretaria de Pesquisa e Planejamento Urbano – SEPUR</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/caixas.js"></script>
+  <script>
+    (function () {
+      var DADOS = window.OBSERVATORIO;
+      var CAIXAS = DADOS.caixas;
+      var app = document.getElementById("app");
+      var busca = document.getElementById("busca");
+      var fCaixa = document.getElementById("f-caixa");
+      var fStatus = document.getElementById("f-status");
+      var STATUS = { "vigente": "Vigente", "em-elaboracao": "Em elaboração", "arquivado": "Arquivado" };
+      var SETA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';
+      var DOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>';
+      var CAIXA_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l10 5-10 5L2 7z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>';
+
+      function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+      function norm(s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+      function nDocs(n) { return n + (n === 1 ? " doc" : " docs"); }
+      function dataBR(iso) { var p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+
+      function docsFiltrados(c) {
+        var t = norm(busca.value), st = fStatus.value;
+        return c.documentos.filter(function (d) {
+          if (st && d.status !== st) return false;
+          return !t || norm([d.titulo, d.tipo, d.ano, d.bairro].join(" ")).indexOf(t) >= 0 || norm(c.nome).indexOf(t) >= 0;
+        });
+      }
+      function caixaVisivel(c) {
+        if (fCaixa.value && fCaixa.value !== c.id) return false;
+        var t = norm(busca.value);
+        if (!t && !fStatus.value) return true;
+        return (!fStatus.value && norm(c.nome + " " + c.descricao).indexOf(t) >= 0) || docsFiltrados(c).length > 0;
+      }
+
+      fCaixa.innerHTML = '<option value="">Todas as Caixas Temáticas (' + CAIXAS.length + ")</option>" +
+        CAIXAS.map(function (c, i) { return '<option value="' + c.id + '">Caixa ' + (i + 1) + " · " + esc(c.nome) + "</option>"; }).join("");
+      document.getElementById("atualizacao").textContent = dataBR(DADOS.atualizacao);
+
+      function renderLista() {
+        var vis = CAIXAS.filter(caixaVisivel);
+        document.getElementById("info").innerHTML = "Exibindo <b>" + vis.length + "</b> de <b>" + CAIXAS.length + "</b> caixas temáticas";
+        app.innerHTML =
+          '<div class="sec-head"><h2>' + CAIXA_IC + "Caixas Temáticas do Planejamento Urbano</h2>" +
+          '<span class="hint">Clique na caixa para explorar</span></div>' +
+          (vis.length ? '<div class="grid">' + vis.map(function (c) {
+            var i = CAIXAS.indexOf(c) + 1;
+            return '<a class="caixa" style="--c:' + c.cor + '" href="#/caixa/' + c.id + '">' +
+              '<div class="caixa-top"><div class="sigla">' + esc(c.sigla) + "</div>" +
+              '<div class="caixa-tit"><small>Caixa ' + i + "</small><h3>" + esc(c.nome) + "</h3></div>" +
+              '<span class="count">' + nDocs(c.documentos.length) + "</span></div>" +
+              "<p>" + esc(c.descricao) + "</p>" +
+              '<div class="caixa-foot">Explorar caixa ' + SETA + "</div></a>";
+          }).join("") + "</div>"
+          : '<div class="docs"><div class="vazio">Nenhuma caixa encontrada para o filtro atual.</div></div>');
+      }
+
+      function renderCaixa(c) {
+        var i = CAIXAS.indexOf(c) + 1;
+        var docs = docsFiltrados(c);
+        document.getElementById("info").innerHTML = "Caixa " + i + " · exibindo <b>" + docs.length + "</b> de <b>" + c.documentos.length + "</b> documentos";
+        app.innerHTML =
+          '<a class="voltar" href="#/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Todas as caixas</a>' +
+          '<section style="--c:' + c.cor + '">' +
+          '<div class="det-head"><div class="sigla">' + esc(c.sigla) + "</div><div style=\"flex:1;min-width:220px\">" +
+          '<div class="caixa-tit"><small>Caixa temática ' + i + "</small></div><h2>" + esc(c.nome) + "</h2><p>" + esc(c.descricao) + "</p></div>" +
+          '<span class="count">' + nDocs(c.documentos.length) + "</span></div>" +
+          '<div class="docs">' + (docs.length ? docs.map(function (d) {
+            var meta = [d.tipo, d.ano, d.bairro].filter(Boolean).map(esc).join(" · ");
+            return '<a class="doc"' + (d.link ? ' href="' + esc(d.link) + '" target="_blank" rel="noopener"' : "") + ">" +
+              '<div class="ic">' + DOC + '</div><div class="t"><b>' + esc(d.titulo) + "</b><span>" + meta + "</span></div>" +
+              (d.status ? '<span class="st ' + esc(d.status) + '">' + (STATUS[d.status] || esc(d.status)) + "</span>" : "") + "</a>";
+          }).join("")
+          : '<div class="vazio">' + DOC + (c.documentos.length ? "Nenhum documento encontrado para o filtro atual." : "Esta caixa ainda não possui documentos cadastrados.") + "</div>") +
+          "</div></section>";
+      }
+
+      function render() {
+        var m = location.hash.match(/^#\/caixa\/([\w-]+)/);
+        var c = m && CAIXAS.filter(function (x) { return x.id === m[1]; })[0];
+        fCaixa.value = c ? c.id : "";
+        if (c) renderCaixa(c); else renderLista();
+      }
+
+      fCaixa.addEventListener("change", function () {
+        location.hash = fCaixa.value ? "#/caixa/" + fCaixa.value : "#/";
+      });
+      busca.addEventListener("input", render);
+      fStatus.addEventListener("change", render);
+      window.addEventListener("hashchange", function () { render(); window.scrollTo(0, 0); });
+      render();
+    })();
+  </script>
+</body>
+</html>
